@@ -66,6 +66,11 @@ var listFlags = []cli.Flag{
 		Name:  "list-existing",
 		Usage: "Whether to list existing data that has been pre-populated for the nested list objects benchmark",
 	},
+	cli.IntFlag{
+		Name:  "maxKeys",
+		Value: 100,
+		Usage: "When set, specifies the max keys to fetch per page of list objects request",
+	},
 }
 
 var ListCombinedFlags = combineFlags(globalFlags, ioFlags, listFlags, genFlags, benchFlags, analyzeFlags)
@@ -103,6 +108,7 @@ func mainList(ctx *cli.Context) error {
 		FixedPrefix:      strings.Trim(ctx.String("prefix"), "/"), // reuse this as a fixed prefix when nesting enabled,
 		DepthToList:      ctx.Int("depthToList"),
 		ListExisting:     ctx.Bool("list-existing"), // reuse to avoid re-generating files when nesting enabled.
+		MaxKeys:          ctx.Int("maxKeys"),
 	}
 	return runBench(ctx, &b)
 }

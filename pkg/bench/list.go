@@ -47,6 +47,7 @@ type List struct {
 	FixedPrefix      string // New field: fixed prefix to use for nested calls
 	DepthToList      int    // New field: depth to list at when performing read part of benchmark
 	ListExisting     bool   // When nesting is used, determines whether to populate the tree structure or not
+	MaxKeys          int    // Max keys per page when listing objects
 }
 
 // Prepare will create an empty bucket or delete any content already there
@@ -280,7 +281,7 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 					Prefix:       prefix,
 					Recursive:    true, // List recursively to include all nested objects
 					WithVersions: d.Versions > 1,
-					MaxKeys:      100,
+					MaxKeys:      d.MaxKeys,
 				})
 
 				// Wait for errCh to close.
