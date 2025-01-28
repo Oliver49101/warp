@@ -525,11 +525,11 @@ func (c *connections) downloadOpsStream() bench.OperationsChannel {
 		close(ch)
 	}()
 	for i, conn := range c.ws {
-		if conn == nil {
-			continue
-		}
-		go func(i int) {
+		go func(i int, conn *websocket.Conn) {
 			defer wg.Done()
+			if conn == nil {
+				return
+			}
 			semaphor <- true
 			defer func() {
 				// release semaphore
@@ -550,7 +550,7 @@ func (c *connections) downloadOpsStream() bench.OperationsChannel {
 			for _, op := range resp.Ops {
 				ch <- op
 			}
-		}(i)
+		}(i, conn)
 	}
 	return ch
 }
