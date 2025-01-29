@@ -48,6 +48,7 @@ type List struct {
 	DepthToList      int    // New field: depth to list at when performing read part of benchmark
 	ListExisting     bool   // When nesting is used, determines whether to populate the tree structure or not
 	MaxKeys          int    // Max keys per page when listing objects
+	MaxTotalKeys     int    // Max total keys to fetch, across all pages, when listing objects
 }
 
 // Prepare will create an empty bucket or delete any content already there
@@ -286,6 +287,9 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 
 				// Wait for errCh to close.
 				for {
+					if d.MaxTotalKeys != -1 && op.ObjPerOp >= d.MaxTotalKeys {
+						break
+					}
 					err, ok := <-listCh
 					if !ok {
 						break
