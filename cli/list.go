@@ -71,6 +71,11 @@ var listFlags = []cli.Flag{
 		Value: 100,
 		Usage: "When set, specifies the max keys to fetch per page of list objects request",
 	},
+	cli.IntFlag{
+		Name:  "maxTotalKeys",
+		Value: -1,
+		Usage: "When set, specifies the max total keys to fetch across all pages of list objects request",
+	},
 }
 
 var ListCombinedFlags = combineFlags(globalFlags, ioFlags, listFlags, genFlags, benchFlags, analyzeFlags)
@@ -109,6 +114,7 @@ func mainList(ctx *cli.Context) error {
 		DepthToList:      ctx.Int("depthToList"),
 		ListExisting:     ctx.Bool("list-existing"), // reuse to avoid re-generating files when nesting enabled.
 		MaxKeys:          ctx.Int("maxKeys"),
+		MaxTotalKeys:     ctx.Int("maxTotalKeys"),
 	}
 	return runBench(ctx, &b)
 }
