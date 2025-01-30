@@ -232,9 +232,12 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 			defer wg.Done()
 			done := ctx.Done()
 			objs := d.objects[i]
-			wantN := len(objs)
-			if d.NoPrefix {
-				wantN *= d.Concurrency
+			wantN := d.MaxTotalKeys
+			if !d.ListExisting {
+				wantN = len(objs)
+				if d.NoPrefix {
+					wantN *= d.Concurrency
+				}
 			}
 
 			<-wait
