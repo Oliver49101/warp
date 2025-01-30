@@ -49,6 +49,7 @@ type List struct {
 	ListExisting     bool   // When nesting is used, determines whether to populate the tree structure or not
 	MaxKeys          int    // Max keys per page when listing objects
 	MaxTotalKeys     int    // Max total keys to fetch, across all pages, when listing objects
+	Recursive        bool   // Whether to list recursively
 }
 
 // Prepare will create an empty bucket or delete any content already there
@@ -88,7 +89,7 @@ func (d *List) Prepare(ctx context.Context) error {
 	objsCreated := 0
 	var groupErr error
 
-	if d.Nested && d.ListExisting {
+	if d.ListExisting {
 		return nil
 	}
 
@@ -231,9 +232,12 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 			defer wg.Done()
 			done := ctx.Done()
 			objs := d.objects[i]
-			wantN := len(objs)
-			if d.NoPrefix {
-				wantN *= d.Concurrency
+			wantN := d.MaxTotalKeys
+			if !d.ListExisting {
+				wantN = len(objs)
+				if d.NoPrefix {
+					wantN *= d.Concurrency
+				}
 			}
 
 			<-wait
@@ -250,7 +254,11 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 
 				prefix := ""
 				if !d.Nested {
-					prefix = objs[0].Prefix + "/"
+					if d.ListExisting {
+						prefix = d.FixedPrefix + "/"
+					} else {
+						prefix = objs[0].Prefix + "/"
+					}
 				} else {
 					parentDepth := d.DepthToList
 
@@ -280,7 +288,7 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 				listCh := client.ListObjects(nonTerm, d.Bucket, minio.ListObjectsOptions{
 					WithMetadata: d.Metadata,
 					Prefix:       prefix,
-					Recursive:    true, // List recursively to include all nested objects
+					Recursive:    d.Recursive, // List recursively to include all nested objects
 					WithVersions: d.Versions > 1,
 					MaxKeys:      d.MaxKeys,
 				})
