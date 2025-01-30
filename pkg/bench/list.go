@@ -89,7 +89,7 @@ func (d *List) Prepare(ctx context.Context) error {
 	objsCreated := 0
 	var groupErr error
 
-	if d.Nested && d.ListExisting {
+	if d.ListExisting {
 		return nil
 	}
 
