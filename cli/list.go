@@ -76,6 +76,10 @@ var listFlags = []cli.Flag{
 		Value: -1,
 		Usage: "When set, specifies the max total keys to fetch across all pages of list objects request",
 	},
+	cli.BoolFlag{
+		Name:  "recursive",
+		Usage: "Whether to list recursively, false by default",
+	},
 }
 
 var ListCombinedFlags = combineFlags(globalFlags, ioFlags, listFlags, genFlags, benchFlags, analyzeFlags)
@@ -115,6 +119,7 @@ func mainList(ctx *cli.Context) error {
 		ListExisting:     ctx.Bool("list-existing"), // reuse to avoid re-generating files when nesting enabled.
 		MaxKeys:          ctx.Int("maxKeys"),
 		MaxTotalKeys:     ctx.Int("maxTotalKeys"),
+		Recursive:        ctx.Bool("recursive"),
 	}
 	return runBench(ctx, &b)
 }
