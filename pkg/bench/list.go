@@ -251,7 +251,11 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 
 				prefix := ""
 				if !d.Nested {
-					prefix = objs[0].Prefix + "/"
+					if d.ListExisting {
+						prefix = d.FixedPrefix + "/"
+					} else {
+						prefix = objs[0].Prefix + "/"
+					}
 				} else {
 					parentDepth := d.DepthToList
 
